@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 from fichin import post_token
 from streamlit_autorefresh import st_autorefresh
 
-# App title
-st.title("🎮 Fichin")
-
 # Initialize session state
 if 'token' not in st.session_state:
     st.session_state.token = None
@@ -15,9 +12,25 @@ if 'token' not in st.session_state:
 if st.session_state.token:
     st_autorefresh(interval=1000, key="token_timer")
 
-# 🔐 Foldable Sign-In Section
-with st.expander("🔐 Sign In", expanded=True):
-    # Login form
+# Calculate remaining time string (or fallback)
+def get_time_left_str():
+    if st.session_state.expiry:
+        remaining = st.session_state.expiry - datetime.now()
+        if remaining.total_seconds() > 0:
+            minutes, seconds = divmod(int(remaining.total_seconds()), 60)
+            return f"{minutes:02d}:{seconds:02d}"
+    return "--:--"
+
+# Title
+st.title("🎮 Fichin")
+
+# Show sign-in header with live timer
+time_left = get_time_left_str()
+header_text = f"🔐 Sign In (expires in {time_left})" if st.session_state.token else "🔐 Sign In"
+st.markdown(f"### {header_text}")
+
+# The expander only contains the form and token display, no timer
+with st.expander("Sign-In Form", expanded=True):
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -31,19 +44,16 @@ with st.expander("🔐 Sign In", expanded=True):
         else:
             st.error("Please enter both username and password.")
 
-    # Token display + countdown (inside the same foldable)
+    # Show token and countdown inside expander as well (optional)
     if st.session_state.token and st.session_state.expiry:
         st.code(st.session_state.token, language='text')
-        now = datetime.now()
-        remaining = st.session_state.expiry - now
-
+        remaining = st.session_state.expiry - datetime.now()
         if remaining.total_seconds() <= 0:
             st.error("❌ Token expired.")
             st.session_state.token = None
             st.session_state.expiry = None
         else:
-            minutes, seconds = divmod(int(remaining.total_seconds()), 60)
-            time_left = f"{minutes:02d}:{seconds:02d}"
+            # Also show timer inside expander if you want
             if remaining.total_seconds() < 60:
                 st.warning(f"⚠️ Less than a minute left: **{time_left}**")
             else:
