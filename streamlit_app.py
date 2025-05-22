@@ -15,8 +15,14 @@ if 'token' not in st.session_state:
 if st.session_state.token:
     st_autorefresh(interval=1000, key="token_timer")
 
-# 🔐 Foldable Sign-In Section
-with st.expander("🔐 Sign In", expanded=True):
+# Dynamic expander title
+expander_title = "🔐 Sign In"
+if st.session_state.expiry:
+    expiry_time = st.session_state.expiry.strftime("%H:%M:%S")
+    expander_title += f" (Token expires at {expiry_time})"
+
+# Foldable Sign-In Section
+with st.expander(expander_title, expanded=True):
     # Login form
     with st.form("login_form"):
         username = st.text_input("Username")
@@ -31,7 +37,7 @@ with st.expander("🔐 Sign In", expanded=True):
         else:
             st.error("Please enter both username and password.")
 
-    # Token display + countdown (inside the same foldable)
+    # Token display + countdown
     if st.session_state.token and st.session_state.expiry:
         st.code(st.session_state.token, language='text')
         now = datetime.now()
@@ -42,9 +48,12 @@ with st.expander("🔐 Sign In", expanded=True):
             st.session_state.token = None
             st.session_state.expiry = None
         else:
-            minutes, seconds = divmod(int(remaining.total_seconds()), 60)
+            # Calculate remaining time with ceil to avoid 00:00 when 0.9 seconds left
+            remaining_seconds = int(remaining.total_seconds()) + 1
+            minutes, seconds = divmod(remaining_seconds, 60)
             time_left = f"{minutes:02d}:{seconds:02d}"
-            if remaining.total_seconds() < 60:
-                st.warning(f"⚠️ Less than a minute left: **{time_left}**")
+            
+            if remaining_seconds <= 60:
+                st.warning(f"⚠️ Token expires in: **{seconds} seconds**")
             else:
-                st.info(f"⏳ Token expires in **{time_left}**")
+                st.info(f"⏳ Token expires in: **{time_left}**")
