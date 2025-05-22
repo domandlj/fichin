@@ -1,47 +1,40 @@
 import streamlit as st
 from datetime import datetime, timedelta
 from fichin import post_token
+import time
 from streamlit_autorefresh import st_autorefresh
 
-# App title
-st.title("🎮 Fichin")
+
+
 
 # Initialize session state
 if 'token' not in st.session_state:
     st.session_state.token = None
     st.session_state.expiry = None
 
-# Force refresh every second when token exists
+# Refresh every 1 second if a token exists
 if st.session_state.token:
-    st_autorefresh(interval=1000, key="fichin_refresh", limit=None)
+    st_autorefresh(interval=1000, key="token_timer")
 
-# Dynamic expander title
-def get_title():
-    if st.session_state.expiry:
-        remaining = st.session_state.expiry - datetime.now()
-        if remaining.total_seconds() > 0:
-            expiry_time = st.session_state.expiry.strftime("%H:%M:%S")
-            return f"🔐 Signed In (Expires at {expiry_time})"
-    return "🔐 Sign In"
+st.title("🔐 Sign In")
 
-# Foldable section
-with st.expander(get_title(), expanded=True):
-    # Login form
-    with st.form("login_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Sign In")
+# Login form
+with st.form("login_form"):
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    submitted = st.form_submit_button("Sign In")
 
-    if submitted:
-        if username and password:
-            st.session_state.token = post_token(username, password)
-            st.session_state.expiry = datetime.now() + timedelta(minutes=10)
-            st.success("Signed in successfully!")
-        else:
-            st.error("Please enter both username and password.")
+if submitted:
+    if username and password:
+        st.session_state.token = post_token(username, password)
+        st.session_state.expiry = datetime.now() + timedelta(minutes=10)
+        st.success("Signed in successfully!")
+    else:
+        st.error("Please enter both username and password.")
 
-    # Token display and countdown
-    if st.session_state.token and st.session_state.expiry:
+# Foldable section for token + countdown
+if st.session_state.token and st.session_state.expiry:
+    with st.expander("🔑 Token", expanded=True):
         st.code(st.session_state.token, language='text')
         now = datetime.now()
         remaining = st.session_state.expiry - now
@@ -51,15 +44,9 @@ with st.expander(get_title(), expanded=True):
             st.session_state.token = None
             st.session_state.expiry = None
         else:
-            # Real-time countdown calculation
-            total_seconds = int(remaining.total_seconds())
-            mins, secs = divmod(total_seconds, 60)
-            timer = f"{mins:02d}:{secs:02d}"
-            
-            if total_seconds > 60:
-                st.info(f"⏳ Time remaining: **{timer}**")
+            minutes, seconds = divmod(int(remaining.total_seconds()), 60)
+            time_left = f"{minutes:02d}:{seconds:02d}"
+            if remaining.total_seconds() < 60:
+                st.warning(f"⚠️ Less than a minute left: **{time_left}**")
             else:
-                st.warning(f"⚠️ **{secs} seconds** remaining")
-
-# Force UI update by re-rendering the expander
-st.experimental_rerun()
+                st.info(f"⏳ Token expires in **{time_left}**")
