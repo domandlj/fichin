@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from fichin import post_token
+from fichin import post_token, mostrar_estado_cuenta
+
 
 # App title
 st.title("🪙 Fichin")
@@ -63,3 +64,22 @@ if st.session_state.token and st.session_state.expiry:
                 st.info(f"⏳ Token expires in **{time_left}**")
     else:
         st.info("Click 🔁 Refresh Token Info to check token status.")
+
+# 📊 Estado Cuenta
+if st.session_state.token:
+    st.subheader("📊 Estado Cuenta")
+
+    try:
+        df_cuentas, df_saldos, df_estadisticas = mostrar_estado_cuenta(st.session_state.token)
+
+        with st.expander("🔎 Resumen de Cuentas", expanded=False):
+            st.dataframe(df_cuentas)
+
+        with st.expander("📂 Detalle por Liquidación", expanded=False):
+            st.dataframe(df_saldos)
+
+        with st.expander("📈 Estadísticas", expanded=False):
+            st.dataframe(df_estadisticas)
+
+    except Exception as e:
+        st.error(f"⚠️ No se pudo obtener el estado de cuenta: {e}")
