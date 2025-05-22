@@ -118,20 +118,17 @@ def mostrar_cartera(token: str):
     # Ordenamos de mayor a menor participación
     df_valores.sort_values(by="monto", ascending=False, inplace=True)
 
-    # Mostramos en dos columnas
-    col1, col2 = st.columns([2, 1])
 
-    with col1:
-        st.subheader("📋 Cartera de Inversiones en Pesos")
-        st.dataframe(df_valores.rename(columns={
+    st.subheader("📋 Cartera de Inversiones en Pesos")
+    st.dataframe(df_valores.rename(columns={
             "ticker": "Ticker",
             "monto": "Monto ($)",
             "peso (%)": "Peso (%)"
         }), use_container_width=True)
 
-    with col2:
-        st.subheader("📊 Distribución")
-        st.plotly_chart(
+    
+    st.subheader("📊 Distribución")
+    st.plotly_chart(
             {
                 "data": [
                     {
@@ -169,6 +166,6 @@ if st.session_state.token:
     except Exception as e:
         st.error(f"⚠️ No se pudo obtener el estado de cuenta: {e}")
     
-    st.subheader("Cartera")
+    st.subheader("💼 Cartera")
     mostrar_cartera(st.session_state.token)
 
