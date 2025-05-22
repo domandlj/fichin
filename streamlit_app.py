@@ -4,7 +4,7 @@ from fichin import post_token, mostrar_estado_cuenta, get_valores
 import pandas as pd
 
 # App title
-st.title("🪙 Fichin")
+st.title("🪙 Fichin-Bachelier")
 
 # 🧠 Session state init
 if 'token' not in st.session_state:
