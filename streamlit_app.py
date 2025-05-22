@@ -4,7 +4,7 @@ from fichin import post_token, mostrar_estado_cuenta, get_valores
 import pandas as pd
 
 # App title
-st.title("🪙 Fichin-Bachelier")
+st.title("Bachelier - Portfolio")
 
 # 🧠 Session state init
 if 'token' not in st.session_state:
@@ -13,7 +13,7 @@ if 'token' not in st.session_state:
 
 
 # 🚨 Manual refresh button
-refresh_clicked = st.button("🗘 Check Token Info")
+refresh_clicked = st.button("⟳ Check Token Info")
 
 # ⏱️ Remaining time calculation (only when refreshed)
 remaining_text = ""
