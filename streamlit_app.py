@@ -12,7 +12,7 @@ if 'token' not in st.session_state:
 
 
 # 🚨 Manual refresh button
-refresh_clicked = st.button("🔁 Refresh Token Info")
+refresh_clicked = st.button("🗘 Check Token Info")
 
 # ⏱️ Remaining time calculation (only when refreshed)
 remaining_text = ""
@@ -28,7 +28,7 @@ if refresh_clicked and st.session_state.token and st.session_state.expiry:
         remaining_text = f"{minutes:02d}:{seconds:02d}"
 
 # 🔐 Sign-In Section
-expander_title = f"🔐 Sign In ({remaining_text})" if remaining_text else "🔐 Sign In"
+expander_title = "🔐 Sign In"
 with st.expander(expander_title, expanded=False):
     with st.form("login_form"):
         username = st.text_input("Username")
