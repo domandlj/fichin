@@ -118,17 +118,15 @@ def mostrar_cartera(token: str):
     # Ordenamos de mayor a menor participación
     df_valores.sort_values(by="monto", ascending=False, inplace=True)
 
+    with st.expander("📋 Cartera de Inversiones en Pesos", expanded=False):
+        st.dataframe(df_valores.rename(columns={
+                "ticker": "Ticker",
+                "monto": "Monto ($)",
+                "peso (%)": "Peso (%)"
+            }), use_container_width=True)
 
-    st.subheader("📋 Cartera de Inversiones en Pesos")
-    st.dataframe(df_valores.rename(columns={
-            "ticker": "Ticker",
-            "monto": "Monto ($)",
-            "peso (%)": "Peso (%)"
-        }), use_container_width=True)
-
-    
-    st.subheader("📊 Distribución")
-    st.plotly_chart(
+    with st.expander("📊 Distribución", expanded=False):
+         st.plotly_chart(
             {
                 "data": [
                     {
