@@ -10,6 +10,11 @@ st.title("🎮 Fichin")
 if 'token' not in st.session_state:
     st.session_state.token = None
     st.session_state.expiry = None
+    
+
+# Initialize expander state
+if "expander_open" not in st.session_state:
+    st.session_state.expander_open = True
 
 # 🔁 Refresh every second if token exists
 if st.session_state.token:
@@ -30,7 +35,9 @@ if st.session_state.token and st.session_state.expiry:
 
 # 🔐 Sign-In Section (form only inside expander)
 expander_title = f"🔐 Sign In ({remaining_text})" if remaining_text else "🔐 Sign In"
-with st.expander(expander_title, expanded=True):
+
+
+with st.expander(expander_title, expanded=st.session_state.expander_open):
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -40,8 +47,9 @@ with st.expander(expander_title, expanded=True):
         if username and password:
             st.session_state.token = post_token(username, password)
             st.session_state.expiry = datetime.now() + timedelta(minutes=10)
+            st.session_state.expander_open = False  # 👈 Collapse it after login
             st.success("Signed in successfully!")
-            st.rerun()  # ✅ Updated: use st.rerun() instead of deprecated experimental_rerun
+            st.rerun()
         else:
             st.error("Please enter both username and password.")
 
