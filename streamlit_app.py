@@ -11,11 +11,11 @@ if 'token' not in st.session_state:
     st.session_state.token = None
     st.session_state.expiry = None
 
-# Refresh every 1 second if a token exists
+# 🔁 Refresh every second if token exists
 if st.session_state.token:
     st_autorefresh(interval=1000, key="token_timer")
 
-# Compute time remaining
+# Calculate remaining time
 remaining_text = ""
 if st.session_state.token and st.session_state.expiry:
     now = datetime.now()
@@ -28,10 +28,9 @@ if st.session_state.token and st.session_state.expiry:
         minutes, seconds = divmod(int(remaining.total_seconds()), 60)
         remaining_text = f"{minutes:02d}:{seconds:02d}"
 
-# 🔐 Sign-In Section (only the form is in the expander)
+# 🔐 Sign-In Section (form only inside expander)
 expander_title = f"🔐 Sign In ({remaining_text})" if remaining_text else "🔐 Sign In"
 with st.expander(expander_title, expanded=True):
-    # Login form
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -42,10 +41,11 @@ with st.expander(expander_title, expanded=True):
             st.session_state.token = post_token(username, password)
             st.session_state.expiry = datetime.now() + timedelta(minutes=10)
             st.success("Signed in successfully!")
+            st.experimental_rerun()  # 👈 Force rerun to start timer immediately
         else:
             st.error("Please enter both username and password.")
 
-# Token display and expiration info (outside the expander)
+# 💬 Token Info (outside expander)
 if st.session_state.token and st.session_state.expiry:
     now = datetime.now()
     remaining = st.session_state.expiry - now
