@@ -17,7 +17,8 @@ ascii_art = """
       ░           ░                                                                           
 """
 
-st.text(ascii_art)
+st.markdown(f"```\n{ascii_art}\n```")
+
 # 🧠 Session state init
 if 'token' not in st.session_state:
     st.session_state.token = None
