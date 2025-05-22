@@ -4,7 +4,7 @@ from fichin import post_token
 from streamlit_autorefresh import st_autorefresh
 
 # App title
-st.title("🎮 Fichin")
+st.title("🪙 Fichin")
 
 # Initialize session state
 if 'token' not in st.session_state:
@@ -42,6 +42,7 @@ with st.expander(expander_title, expanded=st.session_state.expander_open):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Sign In")
+    st.session_state.expander_open = True
 
     if submitted:
         if username and password:
