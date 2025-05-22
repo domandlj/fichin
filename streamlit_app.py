@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 from fichin import post_token
 from streamlit_autorefresh import st_autorefresh
+import math  # Added for proper ceiling calculation
 
 # App title
 st.title("🎮 Fichin")
@@ -15,14 +16,14 @@ if 'token' not in st.session_state:
 if st.session_state.token:
     st_autorefresh(interval=1000, key="token_timer")
 
-# Dynamic expander title
-expander_title = "🔐 Sign In"
-if st.session_state.expiry:
-    expiry_time = st.session_state.expiry.strftime("%H:%M:%S")
-    expander_title += f" (Token expires at {expiry_time})"
-
 # Foldable Sign-In Section
-with st.expander(expander_title, expanded=True):
+def get_expander_title():
+    if st.session_state.expiry:
+        expiry_time = st.session_state.expiry.strftime("%H:%M:%S")
+        return f"🔐 Sign In (Token expires at {expiry_time})"
+    return "🔐 Sign In"
+
+with st.expander(get_expander_title(), expanded=True):
     # Login form
     with st.form("login_form"):
         username = st.text_input("Username")
@@ -48,12 +49,12 @@ with st.expander(expander_title, expanded=True):
             st.session_state.token = None
             st.session_state.expiry = None
         else:
-            # Calculate remaining time with ceil to avoid 00:00 when 0.9 seconds left
-            remaining_seconds = int(remaining.total_seconds()) + 1
+            # Corrected countdown calculation using math.ceil
+            remaining_seconds = math.ceil(remaining.total_seconds())
             minutes, seconds = divmod(remaining_seconds, 60)
-            time_left = f"{minutes:02d}:{seconds:02d}"
             
-            if remaining_seconds <= 60:
-                st.warning(f"⚠️ Token expires in: **{seconds} seconds**")
-            else:
+            if remaining_seconds > 60:
+                time_left = f"{minutes:02d}:{seconds:02d}"
                 st.info(f"⏳ Token expires in: **{time_left}**")
+            else:
+                st.warning(f"⚠️ Token expires in: **{seconds} seconds**")
