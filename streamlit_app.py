@@ -1,18 +1,20 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from fichin import post_token
 from streamlit_autorefresh import st_autorefresh
+
+# Dummy post_token function for testing
+def post_token(username, password):
+    return f"token-for-{username}"
 
 # Initialize session state
 if 'token' not in st.session_state:
     st.session_state.token = None
     st.session_state.expiry = None
 
-# Refresh every 1 second if a token exists
+# Trigger auto-refresh every second if token exists
 if st.session_state.token:
-    st_autorefresh(interval=1000, key="token_timer")
+    st_autorefresh(interval=1000, key="refresh_timer")
 
-# Calculate remaining time string (or fallback)
 def get_time_left_str():
     if st.session_state.expiry:
         remaining = st.session_state.expiry - datetime.now()
@@ -21,15 +23,17 @@ def get_time_left_str():
             return f"{minutes:02d}:{seconds:02d}"
     return "--:--"
 
-# Title
 st.title("🎮 Fichin")
 
-# Show sign-in header with live timer
-time_left = get_time_left_str()
-header_text = f"🔐 Sign In (expires in {time_left})" if st.session_state.token else "🔐 Sign In"
+# Show sign-in header with live timer if token exists
+if st.session_state.token:
+    time_left = get_time_left_str()
+    header_text = f"🔐 Sign In (expires in {time_left})"
+else:
+    header_text = "🔐 Sign In"
+
 st.markdown(f"### {header_text}")
 
-# The expander only contains the form and token display, no timer
 with st.expander("Sign-In Form", expanded=True):
     with st.form("login_form"):
         username = st.text_input("Username")
@@ -44,7 +48,6 @@ with st.expander("Sign-In Form", expanded=True):
         else:
             st.error("Please enter both username and password.")
 
-    # Show token and countdown inside expander as well (optional)
     if st.session_state.token and st.session_state.expiry:
         st.code(st.session_state.token, language='text')
         remaining = st.session_state.expiry - datetime.now()
@@ -53,8 +56,7 @@ with st.expander("Sign-In Form", expanded=True):
             st.session_state.token = None
             st.session_state.expiry = None
         else:
-            # Also show timer inside expander if you want
             if remaining.total_seconds() < 60:
-                st.warning(f"⚠️ Less than a minute left: **{time_left}**")
+                st.warning(f"⚠️ Less than a minute left: **{get_time_left_str()}**")
             else:
-                st.info(f"⏳ Token expires in **{time_left}**")
+                st.info(f"⏳ Token expires in **{get_time_left_str()}**")
