@@ -90,3 +90,42 @@ def mostrar_estado_cuenta(token):
     print(f"\nTotal en pesos: {total_en_pesos}")
 
     return df_cuentas, df_saldos, df_estadisticas
+
+
+def get_portafolio_ars(token: str) -> dict:
+    """
+    Llama al endpoint GET api/v2/portafolio/argentina de IOL
+    y devuelve la respuesta como un dict (JSON).
+
+    Parámetros:
+        token (str): Bearer token obtenido previamente.
+
+    Retorna:
+        dict: Datos del portafolio.
+    """
+    url = "https://api.invertironline.com/api/v2/portafolio/argentina"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Error {response.status_code}: {response.text}")
+    
+
+
+def get_valores(token):
+    portfolio = get_portafolio_ars(token)
+    
+    valores = list(map(lambda item : {
+        "ticker":item["titulo"]["simbolo"] , 
+        "monto":item["cantidad"]*item["ultimoPrecio"]/100}, 
+        portfolio["activos"]))
+
+    total = sum(list(map(lambda item:item["monto"], valores)))
+
+    for item in valores:
+        item["peso"]=item["monto"]/total
+    return valores

@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from fichin import post_token, mostrar_estado_cuenta
+from fichin import post_token, mostrar_estado_cuenta, get_valores
 
 
 # App title
@@ -95,6 +95,60 @@ def show_cuentas(df_cuentas):
                 value=f"USD {cuenta_usd['Títulos Valorizados'].values[0]:,.2f}")
             
 
+
+
+def mostrar_cartera(token: str):
+    """
+    Muestra la cartera de inversiones en ARS como una tabla con formato agradable y un gráfico de torta.
+    """
+    valores = get_valores(token)
+    
+    if not valores:
+        st.warning("No hay valores en cartera.")
+        return
+
+    # Convertimos a DataFrame para trabajar más fácil
+    df_valores = pd.DataFrame(valores)
+
+    # Formateo
+    df_valores["monto"] = df_valores["monto"].map(lambda x: round(x, 2))
+    df_valores["peso (%)"] = df_valores["peso"].map(lambda x: round(x * 100, 2))
+    df_valores.drop(columns=["peso"], inplace=True)
+
+    # Ordenamos de mayor a menor participación
+    df_valores.sort_values(by="monto", ascending=False, inplace=True)
+
+    # Mostramos en dos columnas
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.subheader("📋 Cartera de Inversiones en Pesos")
+        st.dataframe(df_valores.rename(columns={
+            "ticker": "Ticker",
+            "monto": "Monto ($)",
+            "peso (%)": "Peso (%)"
+        }), use_container_width=True)
+
+    with col2:
+        st.subheader("📊 Distribución")
+        st.plotly_chart(
+            {
+                "data": [
+                    {
+                        "type": "pie",
+                        "labels": df_valores["ticker"],
+                        "values": df_valores["monto"],
+                        "hole": 0.4,
+                        "textinfo": "label+percent"
+                    }
+                ],
+                "layout": {"margin": {"l": 0, "r": 0, "b": 0, "t": 0}}
+            },
+            use_container_width=True
+        )
+
+
+
 if st.session_state.token:
     st.subheader("📊 Estado Cuenta")
 
@@ -114,3 +168,7 @@ if st.session_state.token:
 
     except Exception as e:
         st.error(f"⚠️ No se pudo obtener el estado de cuenta: {e}")
+    
+    st.subheader("Cartera")
+    mostrar_cartera(st.session_state.token)
+    
