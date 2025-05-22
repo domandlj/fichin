@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime, timedelta
 from fichin import post_token, mostrar_estado_cuenta, get_valores
-
+import pandas as pd
 
 # App title
 st.title("🪙 Fichin")
@@ -171,4 +171,4 @@ if st.session_state.token:
     
     st.subheader("Cartera")
     mostrar_cartera(st.session_state.token)
-    
+
