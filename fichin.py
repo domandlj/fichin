@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 
 def post_token(username: str, password: str) -> dict:
     url = "https://api.invertironline.com/token"
