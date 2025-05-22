@@ -66,11 +66,42 @@ if st.session_state.token and st.session_state.expiry:
         st.info("Click 🔁 Refresh Token Info to check token status.")
 
 # 📊 Estado Cuenta
+
+def show_cuentas(df_cuentas):
+    # 🎯 Resumen visual de saldos y títulos valorizados por cuenta
+    col1, col2 = st.columns(2)
+
+    with col1:
+        cuenta_pesos = df_cuentas[df_cuentas["Moneda"] == "peso_Argentino"]
+        if not cuenta_pesos.empty:
+            st.metric(
+                label="💵 Saldo en Pesos",
+                value=f"${cuenta_pesos['Saldo'].values[0]:,.2f}"
+            )
+            st.metric(
+                label="📈 Títulos Valorizados en Pesos",
+                value=f"${cuenta_pesos['Títulos Valorizados'].values[0]:,.2f}"
+            )
+
+    with col2:
+        cuenta_usd = df_cuentas[df_cuentas["Moneda"] == "dolar_Estadounidense"]
+        if not cuenta_usd.empty:
+            st.metric(
+                label="💲 Saldo en USD",
+                value=f"USD {cuenta_usd['Saldo'].values[0]:,.2f}"
+            )
+            st.metric(
+                label="📉 Títulos Valorizados en USD",
+                value=f"USD {cuenta_usd['Títulos Valorizados'].values[0]:,.2f}")
+            
+
 if st.session_state.token:
     st.subheader("📊 Estado Cuenta")
 
     try:
         df_cuentas, df_saldos, df_estadisticas = mostrar_estado_cuenta(st.session_state.token)
+        
+        show_cuentas(df_cuentas)
 
         with st.expander("🔎 Resumen de Cuentas", expanded=False):
             st.dataframe(df_cuentas)
