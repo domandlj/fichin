@@ -38,7 +38,7 @@ with st.expander(expander_title, expanded=False):
     
     if submitted:
         if username and password:
-            st.session_state.token = post_token(username, password)
+            st.session_state.token = post_token(username, password)["access_token"]
             st.session_state.expiry = datetime.now() + timedelta(minutes=10)
             st.success("Signed in successfully!")
             st.rerun()
