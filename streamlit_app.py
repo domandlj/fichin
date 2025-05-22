@@ -41,7 +41,7 @@ with st.expander(expander_title, expanded=True):
             st.session_state.token = post_token(username, password)
             st.session_state.expiry = datetime.now() + timedelta(minutes=10)
             st.success("Signed in successfully!")
-            st.experimental_rerun()  # 👈 Force rerun to start timer immediately
+            st.rerun()  # ✅ Updated: use st.rerun() instead of deprecated experimental_rerun
         else:
             st.error("Please enter both username and password.")
 
