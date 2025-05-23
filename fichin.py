@@ -152,7 +152,7 @@ def get_cotizaciones(token: str, ticker : str) -> dict:
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         df = pd.DataFrame(response.json())
-        df = df_foo[["descripcionTitulo","ultimoPrecio","apertura","maximo","minimo","cierreAnterior","plazo"]]
+        df = df[["descripcionTitulo","ultimoPrecio","apertura","maximo","minimo","cierreAnterior","plazo"]]
         return df
     else:
         raise Exception(f"Error {response.status_code}: {response.text}")
