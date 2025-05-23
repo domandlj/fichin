@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from datetime import date
 
 def post_token(username: str, password: str) -> dict:
     url = "https://api.invertironline.com/token"
@@ -156,3 +157,58 @@ def get_cotizaciones(token: str, ticker : str) -> dict:
         return df
     else:
         raise Exception(f"Error {response.status_code}: {response.text}")
+
+
+
+
+
+def descargar_serie_historica(token : str, mercado: str, simbolo: str, fecha_desde: date, fecha_hasta: date, ajustada: str) -> dict:
+    """
+    Descarga la serie histórica de cotizaciones desde la API.
+
+    Parámetros:
+    - mercado: 'bCBA' o 'rOFX'
+    - simbolo: símbolo del título (por ejemplo, 'GGAL')
+    - fecha_desde: objeto datetime.date
+    - fecha_hasta: objeto datetime.date
+    - ajustada: 'ajustada' o 'sinAjustar'
+
+    Devuelve:
+    - Diccionario con los datos de la serie histórica
+    """
+    # Validación simple
+    if mercado not in ('bCBA', 'rOFX'):
+        raise ValueError("El mercado debe ser 'bCBA' o 'rOFX'")
+    if ajustada not in ('ajustada', 'sinAjustar'):
+        raise ValueError("El valor de 'ajustada' debe ser 'ajustada' o 'sinAjustar'")
+
+    fecha_desde_str = fecha_desde.strftime('%Y-%m-%d')
+    fecha_hasta_str = fecha_hasta.strftime('%Y-%m-%d')
+
+    url = f"https://api.invertironline.com/api/v2/{mercado}/Titulos/{simbolo}/Cotizacion/seriehistorica/{fecha_desde_str}/{fecha_hasta_str}/{ajustada}"
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"Error {response.status_code}: {response.text}")
+
+    data = response.json()
+    
+    # Convertir a DataFrame
+    df = pd.DataFrame(data)
+
+    # Convertir 'fechaHora' a datetime (y renombrar a 'fecha')
+    if 'fechaHora' in df.columns:
+        df['fecha'] = pd.to_datetime(df['fechaHora'], format='mixed').dt.date
+        df = df.drop(columns=['fechaHora'])
+
+    # Reordenar columnas (fecha primero si existe)
+    cols = ['fecha'] + [col for col in df.columns if col != 'fecha']
+    df = df[cols]
+
+    return df

@@ -1,6 +1,6 @@
 import streamlit as st
-from datetime import datetime, timedelta
-from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones
+from datetime import datetime, timedelta, date
+from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones, descargar_serie_historica
 import pandas as pd
 
 # App title
@@ -160,7 +160,42 @@ def mostrar_cartera(token: str):
             use_container_width=True
         )
 
+def get_historicas():
+    st.title("Descargar Serie Histórica")
 
+    # Formulario para ingresar los datos
+    with st.form("serie_form"):
+        simbolo = st.text_input("Ticker", value="AL30")
+
+        mercados_map = {
+            "BYMA": "bCBA",
+            "ROFEX": "rOFX"
+        }
+
+        # El usuario elige el nombre visible
+        mercado_visible = st.selectbox("Mercado", options=list(mercados_map.keys()))
+
+        # Convertimos el nombre a código para pasarlo a la función
+        mercado = mercados_map[mercado_visible]
+
+        fecha_desde = st.date_input("Fecha desde", value=date(2023, 1, 1))
+        fecha_hasta = st.date_input("Fecha hasta", value=date(2024, 1, 1))
+
+        ajustada = st.selectbox("Ajuste de precios", options=["sinAjustar", "ajustada"])
+
+        submit = st.form_submit_button("Descargar")
+
+    if submit:
+        serie = descargar_serie_historica(
+            token=st.session_state.token,
+            mercado=mercado,
+            simbolo=simbolo,
+            fecha_desde=fecha_desde,
+            fecha_hasta=fecha_hasta,
+            ajustada=ajustada
+        )
+        st.success("Datos descargados correctamente")
+        st.write(serie)
 
 if st.session_state.token:
     st.subheader("📊 Estado Cuenta")
@@ -195,5 +230,7 @@ if st.session_state.token:
                 st.dataframe(df_cotizacion)
             else:
                 st.warning("Por favor ingresá un ticker.")
+    with st.expaned("Histórica", expanded = False):
+        get_historicas()
 
 
