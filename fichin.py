@@ -129,3 +129,30 @@ def get_valores(token):
     for item in valores:
         item["peso"]=item["monto"]/total
     return valores
+
+
+def get_cotizaciones(token: str, ticker : str) -> dict:
+    """
+    Llama al endpoint GET /api/v2/{Mercado}/Titulos/{Simbolo}/Cotizacion de IOL
+    y devuelve la respuesta como un dataframe.
+
+    Parámetros:
+        token (str): Bearer token obtenido previamente.
+        ticker (str) : ticekr del activo
+
+    Retorna:
+        dict. cotizaciones 
+    """
+    
+    url = f"https://api.invertironline.com/api/v2/bCBA/Titulos/{ticker}/Cotizacion"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        df = pd.DataFrame(response.json())
+        df = df_foo[["descripcionTitulo","ultimoPrecio","apertura","maximo","minimo","cierreAnterior","plazo"]]
+        return df
+    else:
+        raise Exception(f"Error {response.status_code}: {response.text}")

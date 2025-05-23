@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from fichin import post_token, mostrar_estado_cuenta, get_valores
+from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones
 import pandas as pd
 
 # App title
@@ -182,6 +182,18 @@ if st.session_state.token:
     except Exception as e:
         st.error(f"⚠️ No se pudo obtener el estado de cuenta: {e}")
     
+
     st.subheader("💼 Cartera")
     mostrar_cartera(st.session_state.token)
+
+    st.subheader("📈 Cotizaciones")
+    with st.expander("Actual", expanded=False):
+        ticker_input = st.text_input("Ticker", key="ticker_input")
+        if st.button("Buscar cotización"):
+            if ticker_input:
+                df_cotizacion = get_cotizaciones(st.session_state.token, ticker_input)
+                st.dataframe(df_cotizacion)
+            else:
+                st.warning("Por favor ingresá un ticker.")
+
 
