@@ -151,7 +151,7 @@ def get_cotizaciones(token: str, ticker : str) -> dict:
 
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        df = pd.DataFrame(response.json())
+        df = pd.DataFrame([response.json()])
         df = df[["descripcionTitulo","ultimoPrecio","apertura","maximo","minimo","cierreAnterior","plazo"]]
         return df
     else:
