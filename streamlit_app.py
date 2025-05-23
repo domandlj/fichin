@@ -195,7 +195,15 @@ def get_historicas():
             ajustada=ajustada
         )
         st.success("Datos descargados correctamente")
+
+        # Asegurarse de que la columna 'fecha' sea de tipo datetime
+        serie["fecha"] = pd.to_datetime(serie["fecha"])
+
+        # Crear el gráfico
+        st.subheader("Evolución del Precio")
+        st.line_chart(data=serie, x="fecha", y="ultimoPrecio")
         st.write(serie)
+        
 
 if st.session_state.token:
     st.subheader("📊 Estado Cuenta")
