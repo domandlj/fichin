@@ -230,7 +230,8 @@ if st.session_state.token:
                 st.dataframe(df_cotizacion)
             else:
                 st.warning("Por favor ingresá un ticker.")
-    with st.expaned("Histórica", expanded = False):
+                
+    with st.expander("Histórica", expanded = False):
         get_historicas()
 
 
