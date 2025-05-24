@@ -23,7 +23,7 @@ ascii_art = """
 ★ meta-broker ★
 
 ⟨web: bachelier.site⟩
-⟨mail: juan domandl@mi.unc.edu.ar⟩
+⟨mail: juan.domandl@mi.unc.edu.ar⟩
 """
 
 
