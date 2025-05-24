@@ -41,7 +41,6 @@ ascii_art = """
 
 
 st.markdown(f"```\n{ascii_art}\n```")
-st.markdown(f"```\n{rabbit_art}\n```")
 st.markdown("Conexión no oficial con API de IOL")
 
 # 🧠 Session state init
