@@ -280,7 +280,6 @@ if st.session_state.token:
 def call_be(strike, prima):
     return strike + prima
 
-# Gráfico interactivo con Plotly
 def diagrama_payoff_call_plotly(strike, prima, px_actual):
     precios = np.linspace(strike - 20, strike + 20, 200)
     payoff = np.maximum(precios - strike, 0) - prima
@@ -319,6 +318,16 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         text=[f"BE: {be}"],
         textposition="bottom center"
     ))
+
+    # Línea horizontal en y=0 (eje base del payoff)
+    fig.add_hline(
+        y=0,
+        line=dict(color="gray", width=2, dash="dash"),
+        name="Eje Y = 0"
+    )
+
+    # Opcional: línea vertical en x=0 (no es muy útil acá pero te la muestro)
+    # fig.add_vline(x=0, line=dict(color="orange", width=1, dash="dot"))
 
     # Layout
     fig.update_layout(
