@@ -2,6 +2,9 @@ import streamlit as st
 from datetime import datetime, timedelta, date
 from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones, descargar_serie_historica, post_comprar_monto_px_mercado
 import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+
 
 # App title
 ascii_art = """
@@ -269,3 +272,77 @@ def compar_ui():
 if st.session_state.token:
     st.header("🛒 Operar")
     compar_ui()
+
+
+
+
+# Breakeven
+def call_be(strike, prima):
+    return strike + prima
+
+# Gráfico interactivo con Plotly
+def diagrama_payoff_call_plotly(strike, prima, px_actual):
+    precios = np.linspace(strike - 20, strike + 20, 200)
+    payoff = np.maximum(precios - strike, 0) - prima
+    be = call_be(strike, prima)
+    payoff_px_actual = max(px_actual - strike, 0) - prima
+
+    fig = go.Figure()
+
+    # Línea de payoff
+    fig.add_trace(go.Scatter(
+        x=precios,
+        y=payoff,
+        mode='lines',
+        name='Payoff Call',
+        line=dict(color='blue')
+    ))
+
+    # Punto del precio actual
+    fig.add_trace(go.Scatter(
+        x=[px_actual],
+        y=[payoff_px_actual],
+        mode='markers+text',
+        name='Precio actual',
+        marker=dict(color='red', size=10),
+        text=[f"Px actual: {px_actual}"],
+        textposition="top center"
+    ))
+
+    # Punto de breakeven
+    fig.add_trace(go.Scatter(
+        x=[be],
+        y=[0],
+        mode='markers+text',
+        name='Breakeven',
+        marker=dict(color='green', size=10),
+        text=[f"BE: {be}"],
+        textposition="bottom center"
+    ))
+
+    # Layout
+    fig.update_layout(
+        title="Payoff de Call Comprada",
+        xaxis_title="Precio del Subyacente",
+        yaxis_title="Payoff",
+        showlegend=True,
+        template="plotly_white",
+        height=500
+    )
+
+    return fig
+
+
+
+if st.session_state.token:
+
+    # === STREAMLIT INTERFAZ ===
+    st.header("Diagrama Interactivo de Payoff - Call Comprada")
+
+    strike = st.number_input("Strike", min_value=0.0, step=1.0, value=100.0)
+    prima = st.number_input("Prima pagada", min_value=0.0, step=0.5, value=10.0)
+    px_actual = st.number_input("Precio actual del subyacente", min_value=0.0, step=1.0, value=110.0)
+
+    if st.button("Mostrar gráfico interactivo"):
+        fig = diagrama_payoff_call_plotly(strike, prima, px_actual)
+        st.plotly_chart(fig, use_container_width=True)
