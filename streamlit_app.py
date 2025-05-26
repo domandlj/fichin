@@ -322,7 +322,7 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
     # Línea horizontal en y=0 (eje base del payoff)
     fig.add_hline(
         y=0,
-        line=dict(color="gray", width=2, dash="dash"),
+        line=dict(color="red", width=2, dash="dash"),
         name="Eje Y = 0"
     )
 
