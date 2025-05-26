@@ -252,7 +252,6 @@ if st.session_state.token:
 
 def compar_ui():
     with st.expander("Comprar a px mkt", expanded=False):
-        st.header("Comprar")
 
         # Inputs del usuario
         ticker = st.text_input("Ticker (ej: GGAL)", value="GGAL")
@@ -268,4 +267,5 @@ def compar_ui():
                 st.error(f"Ocurrió un error: {e}")
 
 if st.session_state.token:
+    st.header("Operar")
     compar_ui()
