@@ -212,3 +212,78 @@ def descargar_serie_historica(token : str, mercado: str, simbolo: str, fecha_des
     df = df[cols]
 
     return df
+
+
+
+"""
+    Operar.
+"""
+
+
+def get_cotizacion(token: str, ticker : str) -> dict:
+    """
+    Llama al endpoint GET /api/v2/{Mercado}/Titulos/{Simbolo}/Cotizacion de IOL
+    y devuelve la respuesta como un dict (JSON).
+
+    Parámetros:
+        token (str): Bearer token obtenido previamente.
+        ticker (str) : ticekr del activo
+
+    Retorna:
+        dict. cotizaciones 
+    """
+    
+    url = f"https://api.invertironline.com/api/v2/bCBA/Titulos/{ticker}/Cotizacion"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Error {response.status_code}: {response.text}")
+
+
+
+def get_cotizacion_min(token, ticker):
+    return get_cotizacion(token, ticker)["minimo"]
+
+
+from datetime import datetime, timedelta, timezone
+
+# Hora actual en UTC
+ahora = datetime.now(timezone.utc)
+
+# Sumarle una hora
+validez = ahora + timedelta(hours=1)
+
+# Formatear como string ISO 8601
+validez_str = validez.isoformat()
+
+
+def post_comprar_monto_px_mercado(token, monto, ticker):
+    url = "https://api.invertironline.com/api/v2/operar/Comprar"
+  
+    
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Bearer {token}"
+    }
+    
+    data = {
+        "mercado": "bCBA",
+        "simbolo": ticker,
+        "validez": validez_str,
+        "monto": monto,
+        "plazo":"t1",
+        "precio": get_cotizacion_min(token, ticker),
+        "tipoOrden": "precioMercado",
+    }
+
+    response = requests.post(url, headers=headers, data=data)
+
+    if 200 <= response.status_code < 300:
+        return response.json() 
+    else:
+        raise Exception(f"Error {response.status_code}: {response.text}")

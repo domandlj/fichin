@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta, date
-from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones, descargar_serie_historica
+from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones, descargar_serie_historica, post_comprar_monto_px_mercado
 import pandas as pd
 
 # App title
@@ -249,3 +249,21 @@ if st.session_state.token:
         get_historicas()
 
 
+"""
+    Comprar.
+"""
+
+st.header("Comprar activo a precio de mercado")
+
+# Inputs del usuario
+ticker = st.text_input("Ticker (ej: GGAL)", value="GGAL")
+monto = st.number_input("Monto a invertir ($)", min_value=0.0, step=100.0)
+
+# Botón para comprar
+if st.button("Comprar"):
+    try:
+        resultado = post_comprar_monto_px_mercado(st.session_state.token, monto, ticker)
+        st.success("¡Compra realizada con éxito!")
+        st.json(resultado)
+    except Exception as e:
+        st.error(f"Ocurrió un error: {e}")
