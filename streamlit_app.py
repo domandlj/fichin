@@ -267,5 +267,5 @@ def compar_ui():
                 st.error(f"Ocurrió un error: {e}")
 
 if st.session_state.token:
-    st.header("Operar")
+    st.header("🛒 Operar")
     compar_ui()
