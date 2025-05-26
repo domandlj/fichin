@@ -248,10 +248,7 @@ if st.session_state.token:
     with st.expander("Histórica", expanded = False):
         get_historicas()
 
-
-"""
-    Operar.
-"""
+# Opear
 
 def compar_ui():
     with st.expander("Comprar a px mkt", expanded=False):
