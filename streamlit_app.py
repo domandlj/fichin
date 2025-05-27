@@ -279,7 +279,6 @@ if st.session_state.token:
 # Breakeven
 def call_be(strike, prima):
     return strike + prima
-
 def diagrama_payoff_call_plotly(strike, prima, px_actual):
     precios = np.linspace(strike - 20, strike + 20, 200)
     payoff = np.maximum(precios - strike, 0) - prima
@@ -319,22 +318,18 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         textposition="bottom center"
     ))
 
-    # Punto en el strike
-    fig.add_trace(go.Scatter(
-        x=[strike],
-        y=[-prima],
-        mode='markers+text',
-        name='Strike',
-        marker=dict(color='orange', size=10),
-        text=[f"Strike: {strike}"],
-        textposition="bottom center"
-    ))
+    # Línea vertical en el strike
+    fig.add_vline(
+        x=strike,
+        line=dict(color="orange", width=2, dash="dot"),
+        annotation_text="Strike",
+        annotation_position="top left"
+    )
 
     # Línea horizontal en y=0
     fig.add_hline(
         y=0,
-        line=dict(color="gray", width=2, dash="dash"),
-        name="Eje Y = 0"
+        line=dict(color="gray", width=2, dash="dash")
     )
 
     # Layout
