@@ -319,15 +319,23 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         textposition="bottom center"
     ))
 
-    # Línea horizontal en y=0 (eje base del payoff)
+    # Punto en el strike
+    fig.add_trace(go.Scatter(
+        x=[strike],
+        y=[-prima],
+        mode='markers+text',
+        name='Strike',
+        marker=dict(color='orange', size=10),
+        text=[f"Strike: {strike}"],
+        textposition="bottom center"
+    ))
+
+    # Línea horizontal en y=0
     fig.add_hline(
         y=0,
-        line=dict(color="red", width=2, dash="dash"),
+        line=dict(color="gray", width=2, dash="dash"),
         name="Eje Y = 0"
     )
-
-    # Opcional: línea vertical en x=0 (no es muy útil acá pero te la muestro)
-    # fig.add_vline(x=0, line=dict(color="orange", width=1, dash="dot"))
 
     # Layout
     fig.update_layout(
@@ -340,8 +348,6 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
     )
 
     return fig
-
-
 
 if st.session_state.token:
 
