@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 from datetime import date
+import re
 
 def post_token(username: str, password: str) -> dict:
     url = "https://api.invertironline.com/token"
@@ -285,5 +286,107 @@ def post_comprar_monto_px_mercado(token, monto, ticker):
 
     if 200 <= response.status_code < 300:
         return response.json() 
+    else:
+        raise Exception(f"Error {response.status_code}: {response.text}")
+
+
+
+
+def parse_ticker(ticker):
+    # Caso con punto separador
+    if '.' in ticker:
+        subyacente_strike, mes_tipo = ticker.split('.')
+        match = re.match(r"([A-Z]+)(\d+(?:\.\d+)?)", subyacente_strike)
+        if match:
+            subyacente, strike = match.groups()
+        else:
+            return None
+    else:
+        # Sin punto: buscar subyacente + strike + sufijo de 1 o 2 letras
+        match = re.match(r"([A-Z]+)(\d+(?:\.\d+)?)([A-Z]{1,2})$", ticker)
+        if match:
+            subyacente, strike, mes_tipo = match.groups()
+        else:
+            return None
+
+    # Decodificar mes solo si se puede
+    letra_mes = mes_tipo[0]
+    meses_call = {
+        'A': 'Enero', 'B': 'Febrero', 'C': 'Marzo', 'D': 'Abril',
+        'E': 'Mayo', 'F': 'Junio', 'G': 'Julio', 'H': 'Agosto',
+        'I': 'Septiembre', 'J': 'Octubre', 'K': 'Noviembre', 'L': 'Diciembre'
+    }
+    mes = meses_call.get(letra_mes, 'Desconocido')
+
+    return {
+        'simbolo': ticker,
+        'subyacente': subyacente,
+        'strike': float(strike),
+        'mes': mes,
+    }
+
+
+def get_cotizaciones_subyacentes(df_calls):
+    cots = {}
+    for ticker in set(df_calls["subyacente"]):
+        cots[ticker] = get_cotizacion(TOKEN, ticker)["ultimoPrecio"]
+    return cots
+
+
+def get_opciones_call(token: str):
+    """
+    Llama al endpoint GET api/v2/estadocuenta de IOL
+    y devuelve la respuesta como un dict (JSON).
+
+    Parámetros:
+        token (str): Bearer token obtenido previamente.
+
+    Retorna:
+        dict: Datos del portafolio.
+    """
+    url = "https://api.invertironline.com//api/v2/Cotizaciones/Opciones/Calls/Argentina"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        df = pd.DataFrame(data["titulos"])
+        puntas_df = df["puntas"].apply(pd.Series)
+        puntas_df = puntas_df.add_prefix("puntas_")
+        
+        df = df.drop(columns=["puntas"]).join(puntas_df)
+        df = df[df["volumen"]>0]
+        
+        
+        # Aplicar la función y expandir el resultado como columnas
+        parsed_cols = df["simbolo"].apply(parse_ticker).apply(pd.Series)
+        
+        # Unir las columnas parseadas al DataFrame original
+        parsed_cols["prima"] = df["ultimoPrecio"]
+
+                
+        mapa_tickers = {
+            "ALUC": "ALUA",
+            "BHIC": "BMA",
+            "BYMC": "BYMA",
+            "COMC": "COME",
+            "GFGC": "GGAL",
+            "METC": "METR",
+            "PAMC": "PAMP",
+            "TXAC": "TXAR",
+            "YPFC": "YPFD"
+        }
+        
+        # Suponiendo que ya tenés el DataFrame df
+        parsed_cols["subyacente"] = parsed_cols["subyacente"].replace(mapa_tickers)
+
+        px_subyacentes = get_cotizaciones_subyacentes(parsed_cols)
+        
+        parsed_cols["px_subyacente"] = parsed_cols["subyacente"].map(px_subyacentes)
+        return parsed_cols
+
+        
     else:
         raise Exception(f"Error {response.status_code}: {response.text}")
