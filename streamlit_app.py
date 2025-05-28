@@ -281,10 +281,22 @@ def call_be(strike, prima):
     return strike + prima
 
 def diagrama_payoff_call_plotly(strike, prima, px_actual):
-    precios = np.linspace(strike - 20, strike + 20, 200)
-    payoff = np.maximum(precios - strike, 0) - prima
     be = call_be(strike, prima)
     payoff_px_actual = max(px_actual - strike, 0) - prima
+
+    # Definir el rango dinámico basado en los valores relevantes
+    valores_clave = [strike, px_actual, be]
+    centro = np.mean(valores_clave)
+    rango = max(valores_clave) - min(valores_clave)
+
+    # Asegurar un margen mínimo razonable
+    margen = max(rango * 0.5, strike * 0.3, 10)
+
+    x_min = min(valores_clave) - margen
+    x_max = max(valores_clave) + margen
+    precios = np.linspace(x_min, x_max, 300)
+
+    payoff = np.maximum(precios - strike, 0) - prima
 
     fig = go.Figure()
 
@@ -302,7 +314,7 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         mode='markers+text',
         name='Precio actual',
         marker=dict(color='red', size=10),
-        text=[f"Px actual: {px_actual}"],
+        text=[f"Px actual: {px_actual:.2f}"],
         textposition="top center"
     ))
 
@@ -312,7 +324,7 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         mode='markers+text',
         name='Breakeven',
         marker=dict(color='green', size=10),
-        text=[f"BE: {be}"],
+        text=[f"BE: {be:.2f}"],
         textposition="bottom center"
     ))
 
@@ -322,7 +334,7 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         mode='markers+text',
         name='Strike',
         marker=dict(color='orange', size=10),
-        text=[f"Strike: {strike}"],
+        text=[f"Strike: {strike:.2f}"],
         textposition="bottom center"
     ))
 
