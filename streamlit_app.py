@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta, date
-from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones, descargar_serie_historica, post_comprar_monto_px_mercado
+from fichin import post_token, mostrar_estado_cuenta, get_valores, get_cotizaciones, descargar_serie_historica, post_comprar_monto_px_mercado, get_opciones_call
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -288,7 +288,6 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
 
     fig = go.Figure()
 
-    # Línea de payoff
     fig.add_trace(go.Scatter(
         x=precios,
         y=payoff,
@@ -297,7 +296,6 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         line=dict(color='blue')
     ))
 
-    # Punto del precio actual
     fig.add_trace(go.Scatter(
         x=[px_actual],
         y=[payoff_px_actual],
@@ -308,7 +306,6 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         textposition="top center"
     ))
 
-    # Punto de breakeven
     fig.add_trace(go.Scatter(
         x=[be],
         y=[0],
@@ -319,7 +316,6 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         textposition="bottom center"
     ))
 
-    # Punto en el eje x para el strike (y=0)
     fig.add_trace(go.Scatter(
         x=[strike],
         y=[0],
@@ -330,13 +326,11 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
         textposition="bottom center"
     ))
 
-    # Línea horizontal en y=0
     fig.add_hline(
         y=0,
         line=dict(color="gray", width=2, dash="dash")
     )
 
-    # Layout
     fig.update_layout(
         title="Payoff de Call Comprada",
         xaxis_title="Precio del Subyacente",
@@ -349,13 +343,24 @@ def diagrama_payoff_call_plotly(strike, prima, px_actual):
     return fig
 
 if st.session_state.token:
-
-    # === STREAMLIT INTERFAZ ===
     st.header("Diagrama Interactivo de Payoff - Call Comprada")
 
-    strike = st.number_input("Strike", min_value=0.0, step=1.0, value=100.0)
-    prima = st.number_input("Prima pagada", min_value=0.0, step=0.5, value=10.0)
-    px_actual = st.number_input("Precio actual del subyacente", min_value=0.0, step=1.0, value=110.0)
+    # Obtener el dataframe de opciones
+    data = get_opciones_call(st.session_state.token)
+
+    # Mostrar selectbox con los símbolos disponibles
+    simbolos = data['simbolo'].unique()
+    simbolo_elegido = st.selectbox("Elegí un símbolo", simbolos)
+
+    # Filtrar la fila correspondiente al símbolo elegido
+    fila = data[data['simbolo'] == simbolo_elegido].iloc[0]
+
+    strike = fila['strike']
+    prima = fila['prima']
+    px_actual = fila['px_subyacente']
+
+    st.write(f"**Subyacente:** {fila['subyacente']}  |  **Mes:** {fila['mes']}")
+    st.write(f"**Strike:** {strike}  |  **Prima:** {prima}  |  **Precio subyacente actual:** {px_actual}")
 
     if st.button("Mostrar gráfico interactivo"):
         fig = diagrama_payoff_call_plotly(strike, prima, px_actual)
