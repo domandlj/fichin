@@ -326,10 +326,10 @@ def parse_ticker(ticker):
     }
 
 
-def get_cotizaciones_subyacentes(df_calls):
+def get_cotizaciones_subyacentes(token,df_calls):
     cots = {}
     for ticker in set(df_calls["subyacente"]):
-        cots[ticker] = get_cotizacion(TOKEN, ticker)["ultimoPrecio"]
+        cots[ticker] = get_cotizacion(token, ticker)["ultimoPrecio"]
     return cots
 
 
@@ -382,7 +382,7 @@ def get_opciones_call(token: str):
         # Suponiendo que ya tenés el DataFrame df
         parsed_cols["subyacente"] = parsed_cols["subyacente"].replace(mapa_tickers)
 
-        px_subyacentes = get_cotizaciones_subyacentes(parsed_cols)
+        px_subyacentes = get_cotizaciones_subyacentes(token, parsed_cols)
         
         parsed_cols["px_subyacente"] = parsed_cols["subyacente"].map(px_subyacentes)
         return parsed_cols
